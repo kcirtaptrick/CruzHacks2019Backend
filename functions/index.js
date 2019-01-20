@@ -37,12 +37,12 @@ exports.getQuestion = functions.https.onRequest((request, response) => {
         var questions = db.collection('questions');
 
         questions.get().then(snapshot => {
-                var docs = snapshot._docs();
-                var randIndex = Math.floor((Math.random() * docs.length));
+                var docus = snapshot._docs();
+                var randIndex = Math.floor((Math.random() * docus.length));
                 // response.send(docs[randIndex])
                 response.send({
                     _id: randIndex,
-                    question: docs[randIndex]._fieldsProto.questionText.stringValue
+                    question: docus[randIndex]._fieldsProto.questionText.stringValue
                 });
                 return;
             }).catch()
@@ -65,7 +65,9 @@ exports.handleResponse = functions.https.onRequest((request, response) => {
             var age = doc._fieldsProto.age.integerValue;
             var questions = db.collection("questions").get().then(snapshot => {
                 var qDocs = snapshot._docs();
-                var qId = qDocs[id]._ref._referencePath.segments[1];
+                var qId = qDocs[id]._ref._path.segments[1];
+                // response.send(qDocs[id]);
+                // return;
                 var qRef = db.collection("questions").doc(qId).update({
                     responses: admin.firestore.FieldValue.arrayUnion({
                         Age: age,
@@ -77,7 +79,7 @@ exports.handleResponse = functions.https.onRequest((request, response) => {
                     questionsAns: 1 + Number(doc._fieldsProto.questionsAns.integerValue),
                     totalDonated: 0.001 + Number(doc._fieldsProto.totalDonated.doubleValue)
                 })
-                response.send(doc);
+                response.send("added a thing!");
                 return;
             }).catch();
             return;
@@ -134,12 +136,12 @@ app.intent(NOPE_INTENT, (conv) => {
 });
 
 //while(user !quit) => continue to invoke answers
-for (var i = 0; i <= 20; i++) {
-    if (want === true) {
-        break;
-    }
-    getSurvey(conv);
-}
+// for (var i = 0; i <= 20; i++) {
+//     if (want === true) {
+//         break;
+//     }
+//     getSurvey(conv);
+// }
 
 //checks to see if user wants to know their current amount donated
 app.intent(CURRENT_CASH_INTENT, (conv) => {
@@ -164,7 +166,8 @@ app.intent(CLOSE_INTENT, (conv) => {
 //Helper fuctions for when user wants a survey
 function getSurvey(conv) {
     app.intent(REQUEST_SURVEY, (conv) => {
-   			conv.ask(docs[Math.floor(Math.random()*docs.length)]._fieldsProto.questionText.stringValue);
+    		console.log(docs);
+   			conv.ask("1" + docs[Math.floor(Math.random()*docs.length)]._fieldsProto.questionText.stringValue);
  
             if (response !== NOPE_INTENT && response !== SKIP_INTENT) {
                 app.intent(REQUEST_SURVEY, (conv) => {
